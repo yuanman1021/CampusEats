@@ -1,0 +1,68 @@
+[
+  {
+    "menu_item_id": 1,
+    "vendor_id": 1,
+    "name": "Caffe Latte",
+    "description": "Rich espresso balanced with steamed milk.",
+    "price": 4.5,
+    "category": "Coffee",
+    "image_url": "/images/caffe-latte.jpg",
+    "in_stock": true,
+    "tags": [
+      "Vegetarian",
+      "Hot"
+    ]
+  },
+  {
+    "menu_item_id": 2,
+    "vendor_id": 1,
+    "name": "Chocolate Muffin",
+    "description": "Rich chocolate cake with chocolate chunks.",
+    "price": 4.25,
+    "category": "Pastries",
+    "image_url": "/images/chocolate-muffin.jpg",
+    "in_stock": true,
+    "tags": [
+      "Sweet"
+    ]
+  },
+  {
+    "menu_item_id": 3,
+    "vendor_id": 1,
+    "name": "Turkey Avocado Sandwich",
+    "description": "Sandwich with turkey, avocado and fresh vegetables.",
+    "price": 8.95,
+    "category": "Sandwiches",
+    "image_url": "/images/turkey-sandwich.jpg",
+    "in_stock": true,
+    "tags": [
+      "Popular"
+    ]
+  },
+  {
+    "menu_item_id": 4,
+    "vendor_id": 2,
+    "name": "Margherita Pizza",
+    "description": "Classic pizza with tomato sauce and cheese.",
+    "price": 12.5,
+    "category": "Pizza",
+    "image_url": "/images/pizza.jpg",
+    "in_stock": true,
+    "tags": [
+      "Popular"
+    ]
+  },
+  {
+    "menu_item_id": 5,
+    "vendor_id": 2,
+    "name": "Triton Burger",
+    "description": "Beef burger with lettuce, cheese and special sauce.",
+    "price": 9.0,
+    "category": "Burgers",
+    "image_url": "/images/burger.jpg",
+    "in_stock": true,
+    "tags": [
+      "Trending"
+    ]
+  }
+]

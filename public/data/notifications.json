@@ -1,0 +1,35 @@
+[
+  {
+    "notification_id": 1,
+    "user_id": 1,
+    "order_id": 1,
+    "promotion_id": null,
+    "title": "Order Ready",
+    "message": "Your order from The Daily Grind is ready for pickup.",
+    "type": "order_ready",
+    "is_read": false,
+    "created_at": "2026-04-08 12:25:00"
+  },
+  {
+    "notification_id": 2,
+    "user_id": 2,
+    "order_id": 2,
+    "promotion_id": null,
+    "title": "New Order Received",
+    "message": "A new order has been placed by Ali Student.",
+    "type": "order_status",
+    "is_read": false,
+    "created_at": "2026-04-08 12:20:00"
+  },
+  {
+    "notification_id": 3,
+    "user_id": 1,
+    "order_id": null,
+    "promotion_id": 1,
+    "title": "New Promotion",
+    "message": "Friday Pizza Party is now available at The Commons Hall.",
+    "type": "promotion",
+    "is_read": true,
+    "created_at": "2026-04-08 11:00:00"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "order_item_id": 1,
+    "order_id": 1,
+    "menu_item_id": 1,
+    "quantity": 1,
+    "unit_price": 4.5
+  },
+  {
+    "order_item_id": 2,
+    "order_id": 1,
+    "menu_item_id": 3,
+    "quantity": 1,
+    "unit_price": 8.95
+  },
+  {
+    "order_item_id": 3,
+    "order_id": 2,
+    "menu_item_id": 4,
+    "quantity": 1,
+    "unit_price": 12.5
+  },
+  {
+    "order_item_id": 4,
+    "order_id": 2,
+    "menu_item_id": 5,
+    "quantity": 1,
+    "unit_price": 9.0
+  }
+]
