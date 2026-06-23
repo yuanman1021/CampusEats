@@ -4,47 +4,54 @@
 
     <div class="page-header">
       <BackButton />
-      <h1 class="page-title">{{ vendor?.name || 'Vendor Menu' }}</h1>
+      <div>
+        <h1 class="page-title">{{ vendor?.name || 'Vendor Menu' }}</h1>
+        <p v-if="vendor" class="muted vendor-subtitle">
+          {{ vendor.location }} · ⭐ {{ vendor.rating }} · {{ vendor.prep_time }}
+        </p>
+      </div>
     </div>
-    <p style="margin: -8px 0 14px; color: var(--muted); font-size: 13px;" v-if="vendor">
-      ★ {{ vendor.rating || 'New' }} · {{ vendor.prep_time }} · 📍 {{ vendor.location }}
-    </p>
 
-    <template v-if="loading">
-      <div class="skeleton" v-for="n in 3" :key="n"></div>
-    </template>
+    <div v-if="loading" class="skeleton"></div>
 
     <template v-else>
-      <div class="chip-row" v-if="categories.length > 1">
+      <div class="category-scroll">
         <button
           v-for="category in categories"
           :key="category"
-          class="chip"
-          :class="{ active: category === activeCategory }"
-          @click="activeCategory = category"
+          class="category-chip"
+          :class="{ active: selectedCategory === category }"
+          @click="selectedCategory = category"
         >
           {{ category }}
         </button>
       </div>
 
+      <p class="muted menu-count">
+        {{ filteredMenuItems.length }} item(s) available
+      </p>
+
+      <div v-if="filteredMenuItems.length === 0" class="empty-state">
+        <span class="emoji">🍽️</span>
+        <h3>No items found</h3>
+        <p>Please choose another category.</p>
+      </div>
+
       <MenuItemCard
-        v-for="item in visibleItems"
+        v-for="item in filteredMenuItems"
         :key="item.menu_item_id"
         :item="item"
         @add="cartStore.addItem"
       />
 
-      <div v-if="visibleItems.length === 0" class="empty-state">
-        <span class="emoji">🍽️</span>
-        No items in this category yet.
-      </div>
-    </template>
-
-    <div v-if="cartStore.totalItems > 0" style="position: sticky; bottom: 70px;">
-      <button class="btn" @click="$router.push('/cart')">
-        Go to Cart ({{ cartStore.totalItems }})
+      <button
+        v-if="cartStore.totalItems > 0"
+        class="floating-cart-btn"
+        @click="$router.push('/cart')"
+      >
+        View Cart · {{ cartStore.totalItems }} item(s) · RM {{ cartStore.total.toFixed(2) }}
       </button>
-    </div>
+    </template>
 
     <BottomNav />
   </main>
@@ -55,21 +62,25 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import BottomNav from '../components/BottomNav.vue'
-import MenuItemCard from '../components/MenuItemCard.vue'
-import { useVendorStore } from '../stores/vendorStore.js'
-import { useCartStore } from '../stores/cartStore.js'
 import BackButton from '../components/BackButton.vue'
+import MenuItemCard from '../components/MenuItemCard.vue'
+import { useVendorStore } from '../stores/vendorStore'
+import { useCartStore } from '../stores/cartStore'
 
 const route = useRoute()
 const vendorStore = useVendorStore()
 const cartStore = useCartStore()
 
 const vendorId = Number(route.params.id)
+const selectedCategory = ref('All')
 const loading = ref(true)
-const activeCategory = ref('All')
 
 onMounted(async () => {
-  await Promise.all([vendorStore.loadVendors(), vendorStore.loadMenuItems()])
+  loading.value = true
+
+  await vendorStore.loadVendors()
+  await vendorStore.loadMenuItems()
+
   loading.value = false
 })
 
@@ -82,11 +93,17 @@ const vendorMenuItems = computed(() => {
 })
 
 const categories = computed(() => {
-  return ['All', ...new Set(vendorMenuItems.value.map((item) => item.category))]
+  const uniqueCategories = vendorMenuItems.value.map((item) => item.category)
+  return ['All', ...new Set(uniqueCategories)]
 })
 
-const visibleItems = computed(() => {
-  if (activeCategory.value === 'All') return vendorMenuItems.value
-  return vendorMenuItems.value.filter((item) => item.category === activeCategory.value)
+const filteredMenuItems = computed(() => {
+  if (selectedCategory.value === 'All') {
+    return vendorMenuItems.value
+  }
+
+  return vendorMenuItems.value.filter((item) => {
+    return item.category === selectedCategory.value
+  })
 })
 </script>

@@ -751,3 +751,68 @@ a {
 .progress-step.active span {
   background: #f97316;
 }
+
+/* ---------- Menu Category Filter ---------- */
+.vendor-subtitle {
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.category-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 14px;
+  margin-bottom: 4px;
+}
+
+.category-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-chip {
+  flex: 0 0 auto;
+  border: 1px solid #fed7aa;
+  background: #ffffff;
+  color: #c2410c;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.category-chip.active {
+  background: #f97316;
+  color: #ffffff;
+  border-color: #f97316;
+}
+
+.menu-count {
+  margin: 0 0 12px;
+}
+
+.floating-cart-btn {
+  position: fixed;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 440px;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 16px;
+  background: #f97316;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.35);
+  cursor: pointer;
+  z-index: 30;
+}
+
+@media (min-width: 768px) {
+  .floating-cart-btn {
+    max-width: 680px;
+  }
+}
