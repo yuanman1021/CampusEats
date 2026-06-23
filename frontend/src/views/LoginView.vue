@@ -1,26 +1,54 @@
 <template>
-  <main class="page">
-    <h1 class="page-title">CampusEats</h1>
-    <p>Welcome back. Please login to continue.</p>
+  <main class="auth-page">
+    <section class="auth-card">
+      <img
+        src="/images/campuseats-logo.png"
+        alt="CampusEats Logo"
+        class="auth-logo"
+      />
 
-    <input v-model="email" class="input" placeholder="Email address" />
-    <input v-model="password" class="input" type="password" placeholder="Password" />
+      <h1 class="auth-title">CampusEats</h1>
+      <p class="auth-subtitle">
+        Skip the queue. Order ahead and collect when ready.
+      </p>
 
-    <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
+      <div class="auth-form">
+        <label>Email Address</label>
+        <input
+          v-model="email"
+          class="input"
+          placeholder="Enter your email"
+        />
 
-    <button class="btn" @click="handleLogin">Login</button>
+        <label>Password</label>
+        <input
+          v-model="password"
+          class="input"
+          type="password"
+          placeholder="Enter your password"
+        />
 
-    <p style="text-align: center;">
-      New to CampusEats?
-      <RouterLink to="/register"><strong>Register Now</strong></RouterLink>
-    </p>
+        <p v-if="errorMessage" class="auth-error">
+          {{ errorMessage }}
+        </p>
 
-    <div class="card">
-      <strong>Demo Accounts</strong>
-      <p>Customer: ali@student.utm.my / 123456</p>
-      <p>Vendor: dailygrind@utm.my / 123456</p>
-      <p>Admin: admin@campuseats.my / 123456</p>
-    </div>
+        <button class="btn" @click="handleLogin">
+          Login
+        </button>
+      </div>
+
+      <p class="auth-link">
+        New to CampusEats?
+        <RouterLink to="/register">Create account</RouterLink>
+      </p>
+
+      <div class="demo-box">
+        <strong>Demo Accounts</strong>
+        <p>Customer: ali@student.utm.my / 123456</p>
+        <p>Vendor: dailygrind@utm.my / 123456</p>
+        <p>Admin: admin@campuseats.my / 123456</p>
+      </div>
+    </section>
   </main>
 </template>
 
@@ -37,6 +65,13 @@ const password = ref('123456')
 const errorMessage = ref('')
 
 async function handleLogin() {
+  errorMessage.value = ''
+
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Please enter email and password.'
+    return
+  }
+
   try {
     const user = await authStore.login(email.value, password.value)
 
