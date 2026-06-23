@@ -2,12 +2,9 @@
   <main class="page">
     <Navbar />
 
-    <div class="page-header">
-      <BackButton />
-      <div>
-        <h1 class="page-title">Admin Dashboard</h1>
-        <p class="muted">Review vendors and monitor platform activity.</p>
-      </div>
+    <div style="margin-bottom: 16px;">
+      <h1 class="page-title">Admin Dashboard</h1>
+      <p class="muted">Review vendors and monitor platform activity.</p>
     </div>
 
     <div class="dashboard-grid">
@@ -184,7 +181,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
-import BackButton from '../components/BackButton.vue'
 import DashboardCard from '../components/DashboardCard.vue'
 import { useVendorStore } from '../stores/vendorStore'
 import { useOrderStore } from '../stores/orderStore'
