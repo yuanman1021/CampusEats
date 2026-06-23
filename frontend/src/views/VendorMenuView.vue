@@ -36,6 +36,14 @@
       </div>
 
       <template v-else>
+        <div class="menu-search-box">
+          <input
+            v-model="searchText"
+            class="input"
+            placeholder="Search food, e.g. pasta, rice, coffee..."
+          />
+        </div>
+
         <div class="category-scroll">
           <button
             v-for="category in categories"
@@ -55,7 +63,15 @@
         <div v-if="filteredMenuItems.length === 0" class="empty-state">
           <span class="emoji">🍽️</span>
           <h3>No items found</h3>
-          <p>Please choose another category.</p>
+          <p>Try another keyword or category.</p>
+
+          <button
+            v-if="searchText || selectedCategory !== 'All'"
+            class="btn secondary"
+            @click="clearMenuFilters"
+          >
+            Clear Filters
+          </button>
         </div>
 
         <MenuItemCard
@@ -95,6 +111,7 @@ const cartStore = useCartStore()
 
 const vendorId = Number(route.params.id)
 const selectedCategory = ref('All')
+const searchText = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -130,52 +147,31 @@ const categories = computed(() => {
 })
 
 const filteredMenuItems = computed(() => {
-  if (selectedCategory.value === 'All') {
-    return vendorMenuItems.value
-  }
+  const keyword = searchText.value.toLowerCase().trim()
 
   return vendorMenuItems.value.filter((item) => {
-    return item.category === selectedCategory.value
+    const matchesCategory =
+      selectedCategory.value === 'All' ||
+      item.category === selectedCategory.value
+
+    const name = item.name?.toLowerCase() || ''
+    const description = item.description?.toLowerCase() || ''
+    const category = item.category?.toLowerCase() || ''
+    const tags = item.tags?.join(' ').toLowerCase() || ''
+
+    const matchesSearch =
+      !keyword ||
+      name.includes(keyword) ||
+      description.includes(keyword) ||
+      category.includes(keyword) ||
+      tags.includes(keyword)
+
+    return matchesCategory && matchesSearch
   })
 })
+
+function clearMenuFilters() {
+  searchText.value = ''
+  selectedCategory.value = 'All'
+}
 </script>
-
-<style scoped>
-.vendor-menu-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 22px;
-  margin-bottom: 26px;
-}
-
-.vendor-info {
-  min-width: 0;
-}
-
-.vendor-name {
-  margin: 0 0 6px;
-  font-size: 26px;
-  line-height: 1.15;
-  color: #111827;
-}
-
-.vendor-subtitle {
-  margin: 0;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.4;
-}
-
-@media (max-width: 420px) {
-  .vendor-menu-header {
-    gap: 14px;
-    margin-top: 20px;
-    margin-bottom: 24px;
-  }
-
-  .vendor-name {
-    font-size: 24px;
-  }
-}
-</style>

@@ -158,30 +158,117 @@
         </p>
       </div>
 
+      <div class="receipt-card">
+        <div class="receipt-header">
+            <img
+            src="/images/campuseats-logo.png"
+            alt="CampusEats Logo"
+            class="receipt-logo"
+            />
+            <h3>CampusEats Receipt</h3>
+            <p class="muted">Thank you for using CampusEats</p>
+        </div>
+
+        <div class="receipt-section">
+            <div class="receipt-row">
+            <span>Order ID</span>
+            <strong>#{{ order.order_id }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Date</span>
+            <strong>{{ formattedDate }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Status</span>
+            <strong class="receipt-status">{{ order.status }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Vendor</span>
+            <strong>{{ vendor?.name || `Vendor #${order.vendor_id}` }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Pickup Time</span>
+            <strong>{{ order.pickup_at }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Payment</span>
+            <strong>{{ order.payment_label || '-' }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Payment Status</span>
+            <strong>{{ order.payment_status || '-' }}</strong>
+            </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-section">
+            <h4>Items Ordered</h4>
+
+            <div
+            v-for="item in orderItems"
+            :key="item.menu_item_id"
+            class="receipt-item"
+            >
+            <div>
+                <strong>{{ item.name || getMenuItemName(item.menu_item_id) }}</strong>
+                <p class="muted">
+                {{ item.quantity }} × RM {{ Number(item.unit_price || item.price || 0).toFixed(2) }}
+                </p>
+            </div>
+
+            <strong>RM {{ itemTotal(item).toFixed(2) }}</strong>
+            </div>
+
+            <p v-if="orderItems.length === 0" class="muted">
+            No item details available.
+            </p>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-section">
+            <div class="receipt-row">
+            <span>Subtotal</span>
+            <span>RM {{ Number(order.subtotal || 0).toFixed(2) }}</span>
+            </div>
+
+            <div class="receipt-row">
+            <span>Service Fee</span>
+            <span>RM {{ Number(order.service_fee || 0).toFixed(2) }}</span>
+            </div>
+
+            <div class="receipt-row">
+            <span>Tax</span>
+            <span>RM {{ Number(order.tax_amount || 0).toFixed(2) }}</span>
+            </div>
+
+            <div class="receipt-total">
+            <span>Total Paid</span>
+            <strong>RM {{ Number(order.total || 0).toFixed(2) }}</strong>
+            </div>
+        </div>
+
+        <p class="receipt-footer">
+            Please show this receipt when collecting your order.
+        </p>
+      </div>
+
       <div class="card">
-        <h3>Payment Summary</h3>
+        <h3>Order Again</h3>
+        <p class="muted">
+            Add the same items from this order back into your cart.
+        </p>
 
-        <div class="space-between summary-row">
-          <span>Subtotal</span>
-          <span>RM {{ Number(order.subtotal || 0).toFixed(2) }}</span>
-        </div>
-
-        <div class="space-between summary-row">
-          <span>Service Fee</span>
-          <span>RM {{ Number(order.service_fee || 0).toFixed(2) }}</span>
-        </div>
-
-        <div class="space-between summary-row">
-          <span>Tax</span>
-          <span>RM {{ Number(order.tax_amount || 0).toFixed(2) }}</span>
-        </div>
-
-        <hr />
-
-        <div class="space-between">
-          <strong>Total</strong>
-          <strong>RM {{ Number(order.total || 0).toFixed(2) }}</strong>
-        </div>
+        <button class="btn" @click="handleReorder">
+            Reorder Items
+        </button>
       </div>
 
       <div class="card" v-if="order.status === 'placed'">
@@ -209,17 +296,20 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import BottomNav from '../components/BottomNav.vue'
 import BackButton from '../components/BackButton.vue'
 import { useOrderStore } from '../stores/orderStore.js'
 import { useVendorStore } from '../stores/vendorStore.js'
 import { getMockData } from '../services/mockApi.js'
+import { useCartStore } from '../stores/cartStore.js'
 
 const route = useRoute()
+const router = useRouter()
 const orderStore = useOrderStore()
 const vendorStore = useVendorStore()
+const cartStore = useCartStore()
 
 const loading = ref(false)
 const orderItemsData = ref([])
@@ -333,5 +423,35 @@ function handleCancelOrder() {
   if (!confirmed) return
 
   orderStore.cancelOrder(order.value.order_id)
+}
+
+function handleReorder() {
+  if (!order.value || orderItems.value.length === 0) {
+    alert('No items available to reorder.')
+    return
+  }
+
+  cartStore.clearCart()
+
+  orderItems.value.forEach((item) => {
+    const menuItem = vendorStore.menuItems.find((menu) => {
+      return Number(menu.menu_item_id) === Number(item.menu_item_id)
+    })
+
+    if (!menuItem) return
+
+    const quantity = Number(item.quantity || 1)
+
+    for (let i = 0; i < quantity; i += 1) {
+      cartStore.addItem(menuItem)
+    }
+  })
+
+  if (cartStore.items.length === 0) {
+    alert('Some menu items are no longer available.')
+    return
+  }
+
+  router.push('/cart')
 }
 </script>
