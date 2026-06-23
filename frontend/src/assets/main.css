@@ -1313,3 +1313,12 @@ a {
   color: #6b7280;
   font-size: 13px;
 }
+
+/* ---------- Menu Item Search ---------- */
+.menu-search-box {
+  margin-bottom: 8px;
+}
+
+.menu-search-box .input {
+  margin-bottom: 8px;
+}
