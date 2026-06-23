@@ -3,7 +3,6 @@
     <Navbar />
 
     <div class="page-header">
-      <BackButton />
       <div>
         <h1 class="page-title">Vendor Dashboard</h1>
         <p class="muted">Manage orders and monitor today’s performance.</p>
@@ -94,7 +93,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
-import BackButton from '../components/BackButton.vue'
 import DashboardCard from '../components/DashboardCard.vue'
 import { useOrderStore } from '../stores/orderStore'
 import { useRouter } from 'vue-router'
