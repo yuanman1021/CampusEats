@@ -158,30 +158,106 @@
         </p>
       </div>
 
-      <div class="card">
-        <h3>Payment Summary</h3>
-
-        <div class="space-between summary-row">
-          <span>Subtotal</span>
-          <span>RM {{ Number(order.subtotal || 0).toFixed(2) }}</span>
+      <div class="receipt-card">
+        <div class="receipt-header">
+            <img
+            src="/images/campuseats-logo.png"
+            alt="CampusEats Logo"
+            class="receipt-logo"
+            />
+            <h3>CampusEats Receipt</h3>
+            <p class="muted">Thank you for using CampusEats</p>
         </div>
 
-        <div class="space-between summary-row">
-          <span>Service Fee</span>
-          <span>RM {{ Number(order.service_fee || 0).toFixed(2) }}</span>
+        <div class="receipt-section">
+            <div class="receipt-row">
+            <span>Order ID</span>
+            <strong>#{{ order.order_id }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Date</span>
+            <strong>{{ formattedDate }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Status</span>
+            <strong class="receipt-status">{{ order.status }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Vendor</span>
+            <strong>{{ vendor?.name || `Vendor #${order.vendor_id}` }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Pickup Time</span>
+            <strong>{{ order.pickup_at }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Payment</span>
+            <strong>{{ order.payment_label || '-' }}</strong>
+            </div>
+
+            <div class="receipt-row">
+            <span>Payment Status</span>
+            <strong>{{ order.payment_status || '-' }}</strong>
+            </div>
         </div>
 
-        <div class="space-between summary-row">
-          <span>Tax</span>
-          <span>RM {{ Number(order.tax_amount || 0).toFixed(2) }}</span>
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-section">
+            <h4>Items Ordered</h4>
+
+            <div
+            v-for="item in orderItems"
+            :key="item.menu_item_id"
+            class="receipt-item"
+            >
+            <div>
+                <strong>{{ item.name || getMenuItemName(item.menu_item_id) }}</strong>
+                <p class="muted">
+                {{ item.quantity }} × RM {{ Number(item.unit_price || item.price || 0).toFixed(2) }}
+                </p>
+            </div>
+
+            <strong>RM {{ itemTotal(item).toFixed(2) }}</strong>
+            </div>
+
+            <p v-if="orderItems.length === 0" class="muted">
+            No item details available.
+            </p>
         </div>
 
-        <hr />
+        <div class="receipt-divider"></div>
 
-        <div class="space-between">
-          <strong>Total</strong>
-          <strong>RM {{ Number(order.total || 0).toFixed(2) }}</strong>
+        <div class="receipt-section">
+            <div class="receipt-row">
+            <span>Subtotal</span>
+            <span>RM {{ Number(order.subtotal || 0).toFixed(2) }}</span>
+            </div>
+
+            <div class="receipt-row">
+            <span>Service Fee</span>
+            <span>RM {{ Number(order.service_fee || 0).toFixed(2) }}</span>
+            </div>
+
+            <div class="receipt-row">
+            <span>Tax</span>
+            <span>RM {{ Number(order.tax_amount || 0).toFixed(2) }}</span>
+            </div>
+
+            <div class="receipt-total">
+            <span>Total Paid</span>
+            <strong>RM {{ Number(order.total || 0).toFixed(2) }}</strong>
+            </div>
         </div>
+
+        <p class="receipt-footer">
+            Please show this receipt when collecting your order.
+        </p>
       </div>
 
       <div class="card">
