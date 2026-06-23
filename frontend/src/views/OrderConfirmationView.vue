@@ -1,6 +1,9 @@
 <template>
   <main class="page">
-    <h1 class="page-title">Order Confirmed</h1>
+    <div class="page-header">
+      <BackButton />
+      <h1 class="page-title">Order Confirmed</h1>
+    </div>
 
     <div class="card" v-if="orderStore.latestOrder">
       <div class="empty-state">
@@ -32,6 +35,7 @@
 </template>
 
 <script setup>
+import BackButton from '../components/BackButton.vue'
 import { useOrderStore } from '../stores/orderStore.js'
 
 const orderStore = useOrderStore()

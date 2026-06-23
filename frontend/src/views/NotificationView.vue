@@ -2,7 +2,10 @@
   <main class="page bottom-space">
     <Navbar />
 
-    <h1 class="page-title">Notifications</h1>
+    <div class="page-header">
+      <BackButton />
+      <h1 class="page-title">Notifications</h1>
+    </div>
 
     <NotificationItem
       v-for="notification in userNotifications"
@@ -19,6 +22,7 @@
 import { computed, onMounted } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import BottomNav from '../components/BottomNav.vue'
+import BackButton from '../components/BackButton.vue'
 import NotificationItem from '../components/NotificationItem.vue'
 import { useAuthStore } from '../stores/authStore.js'
 import { useNotificationStore } from '../stores/notificationStore.js'
