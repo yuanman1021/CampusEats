@@ -36,6 +36,23 @@
       </div>
 
       <template v-else>
+        <div class="card rating-summary-card">
+          <div class="space-between">
+            <div>
+              <h3>Rating Summary</h3>
+              <p class="muted">Based on customer feedback.</p>
+            </div>
+
+            <div class="rating-score">
+              ⭐ {{ averageRating ? averageRating.toFixed(1) : vendor.rating }}
+            </div>
+          </div>
+
+          <p class="muted">
+            {{ vendorReviews.length }} customer review(s)
+          </p>
+        </div>
+
         <div class="menu-search-box">
           <input
             v-model="searchText"
@@ -81,6 +98,30 @@
           @add="cartStore.addItem"
         />
 
+        <div class="card">
+          <h3>Customer Feedback</h3>
+
+          <div v-if="vendorReviews.length === 0" class="empty-review">
+            <p class="muted">No customer reviews yet.</p>
+          </div>
+
+          <div
+            v-for="review in vendorReviews"
+            :key="review.review_id"
+            class="review-item"
+          >
+            <div class="space-between">
+              <strong>Customer #{{ review.user_id }}</strong>
+              <span class="review-stars">
+                {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
+              </span>
+            </div>
+
+            <p>{{ review.comment }}</p>
+            <small class="muted">{{ new Date(review.created_at).toLocaleString() }}</small>
+          </div>
+        </div>
+
         <button
           v-if="cartStore.totalItems > 0"
           class="floating-cart-btn"
@@ -104,6 +145,7 @@ import BackButton from '../components/BackButton.vue'
 import MenuItemCard from '../components/MenuItemCard.vue'
 import { useVendorStore } from '../stores/vendorStore'
 import { useCartStore } from '../stores/cartStore'
+import { useReviewStore } from '../stores/reviewStore.js'
 
 const route = useRoute()
 const vendorStore = useVendorStore()
@@ -114,6 +156,7 @@ const selectedCategory = ref('All')
 const searchText = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
+const reviewStore = useReviewStore()
 
 onMounted(() => {
   loadMenuData()
@@ -126,6 +169,7 @@ async function loadMenuData() {
   try {
     await vendorStore.loadVendors()
     await vendorStore.loadMenuItems()
+    await reviewStore.loadReviews()
   } catch (error) {
     errorMessage.value = error.message || 'Something went wrong while loading menu data.'
   } finally {
@@ -168,6 +212,14 @@ const filteredMenuItems = computed(() => {
 
     return matchesCategory && matchesSearch
   })
+})
+
+const vendorReviews = computed(() => {
+  return reviewStore.getVendorReviews(vendorId)
+})
+
+const averageRating = computed(() => {
+  return reviewStore.getAverageRating(vendorId)
 })
 
 function clearMenuFilters() {

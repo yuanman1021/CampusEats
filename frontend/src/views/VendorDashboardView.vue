@@ -19,6 +19,45 @@
     <div class="card">
       <div class="space-between">
         <div>
+          <h3 style="margin: 0;">Review Monitoring</h3>
+          <p class="muted" style="margin: 4px 0 0;">
+            Monitor customer feedback for your vendor account.
+          </p>
+        </div>
+
+        <div class="rating-score">
+          ⭐ {{ vendorAverageRating ? vendorAverageRating.toFixed(1) : '0.0' }}
+        </div>
+      </div>
+
+      <p class="muted">
+        {{ vendorReviews.length }} review(s) received
+      </p>
+
+      <div v-if="vendorReviews.length === 0" class="empty-review">
+        <p class="muted">No reviews received yet.</p>
+      </div>
+
+      <div
+        v-for="review in vendorReviews.slice(0, 3)"
+        :key="review.review_id"
+        class="review-item"
+      >
+        <div class="space-between">
+          <strong>Customer #{{ review.user_id }}</strong>
+          <span class="review-stars">
+            {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
+          </span>
+        </div>
+
+        <p>{{ review.comment }}</p>
+        <small class="muted">{{ new Date(review.created_at).toLocaleString() }}</small>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="space-between">
+        <div>
           <h3 style="margin: 0;">Order Queue</h3>
           <p class="muted" style="margin: 4px 0 0;">
             Update order status based on preparation progress.
@@ -96,12 +135,15 @@ import Navbar from '../components/Navbar.vue'
 import DashboardCard from '../components/DashboardCard.vue'
 import { useOrderStore } from '../stores/orderStore'
 import { useRouter } from 'vue-router'
+import { useReviewStore } from '../stores/reviewStore.js'
 
 const orderStore = useOrderStore()
 const statusFilter = ref('all')
+const reviewStore = useReviewStore()
 
 onMounted(async () => {
   await orderStore.loadOrders()
+  await reviewStore.loadReviews()
 })
 
 const vendorOrders = computed(() => {
@@ -137,6 +179,14 @@ const filteredOrders = computed(() => {
 })
 
 const router = useRouter()
+
+const vendorReviews = computed(() => {
+  return reviewStore.getVendorReviews(1)
+})
+
+const vendorAverageRating = computed(() => {
+  return reviewStore.getAverageRating(1)
+})
 
 function goToOrderDetails(orderId) {
   router.push(`/vendor/orders/${orderId}`)

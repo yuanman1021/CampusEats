@@ -50,6 +50,47 @@
     </div>
 
     <div class="card">
+      <div class="space-between">
+        <div>
+          <h3 style="margin: 0;">Review Monitoring</h3>
+          <p class="muted" style="margin: 4px 0 0;">
+            Monitor customer feedback across all vendors.
+          </p>
+        </div>
+
+        <div class="rating-score">
+          ⭐ {{ platformAverageRating ? platformAverageRating.toFixed(1) : '0.0' }}
+        </div>
+      </div>
+
+      <p class="muted">
+        {{ allReviews.length }} total review(s)
+      </p>
+
+      <div v-if="allReviews.length === 0" class="empty-review">
+        <p class="muted">No customer reviews yet.</p>
+      </div>
+
+      <div
+        v-for="review in allReviews.slice(0, 5)"
+        :key="review.review_id"
+        class="review-item"
+      >
+        <div class="space-between">
+          <strong>Vendor #{{ review.vendor_id }}</strong>
+          <span class="review-stars">
+            {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
+          </span>
+        </div>
+
+        <p>{{ review.comment }}</p>
+        <small class="muted">
+          Customer #{{ review.user_id }} · {{ new Date(review.created_at).toLocaleString() }}
+        </small>
+      </div>
+    </div>
+
+    <div class="card">
       <h3 style="margin-top: 0;">Vendor Applications</h3>
 
       <input
@@ -184,16 +225,19 @@ import Navbar from '../components/Navbar.vue'
 import DashboardCard from '../components/DashboardCard.vue'
 import { useVendorStore } from '../stores/vendorStore'
 import { useOrderStore } from '../stores/orderStore'
+import { useReviewStore } from '../stores/reviewStore.js'
 
 const vendorStore = useVendorStore()
 const orderStore = useOrderStore()
 
 const searchText = ref('')
 const statusFilter = ref('all')
+const reviewStore = useReviewStore()
 
 onMounted(async () => {
   await vendorStore.loadVendors()
   await orderStore.loadOrders()
+  await reviewStore.loadReviews()
 })
 
 const pendingVendors = computed(() => {
@@ -259,6 +303,22 @@ const filteredVendors = computed(() => {
 
     return matchesSearch && matchesStatus
   })
+})
+
+const allReviews = computed(() => {
+  return reviewStore.allReviews
+})
+
+const platformAverageRating = computed(() => {
+  if (allReviews.value.length === 0) {
+    return 0
+  }
+
+  const total = allReviews.value.reduce((sum, review) => {
+    return sum + Number(review.rating || 0)
+  }, 0)
+
+  return total / allReviews.value.length
 })
 
 function deactivateVendor(vendorId) {

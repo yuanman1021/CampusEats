@@ -260,6 +260,46 @@
         </p>
       </div>
 
+      <div class="card" v-if="canReviewOrder">
+        <h3>Write a Review</h3>
+        <p class="muted">
+          Rate your experience with this vendor after collecting your order.
+        </p>
+
+        <div class="rating-select">
+          <button
+            v-for="star in 5"
+            :key="star"
+            class="star-btn"
+            :class="{ active: star <= reviewRating }"
+            @click="reviewRating = star"
+          >
+            ★
+          </button>
+        </div>
+
+        <textarea
+          v-model="reviewComment"
+          class="input review-textarea"
+          placeholder="Write your review here..."
+        ></textarea>
+
+        <button class="btn" @click="submitReview">
+          Submit Review
+        </button>
+      </div>
+
+      <div class="card" v-else-if="existingReview">
+        <h3>Your Review</h3>
+
+        <div class="review-stars">
+          {{ '★'.repeat(existingReview.rating) }}{{ '☆'.repeat(5 - existingReview.rating) }}
+        </div>
+
+        <p>{{ existingReview.comment }}</p>
+        <p class="muted">{{ new Date(existingReview.created_at).toLocaleString() }}</p>
+      </div>
+
       <div class="card">
         <h3>Order Again</h3>
         <p class="muted">
@@ -304,11 +344,17 @@ import { useOrderStore } from '../stores/orderStore.js'
 import { useVendorStore } from '../stores/vendorStore.js'
 import { getMockData } from '../services/mockApi.js'
 import { useCartStore } from '../stores/cartStore.js'
+import { useAuthStore } from '../stores/authStore.js'
+import { useReviewStore } from '../stores/reviewStore.js'
 
 const route = useRoute()
 const router = useRouter()
 const orderStore = useOrderStore()
 const vendorStore = useVendorStore()
+const authStore = useAuthStore()
+const reviewStore = useReviewStore()
+const reviewRating = ref(5)
+const reviewComment = ref('')
 const cartStore = useCartStore()
 
 const loading = ref(false)
@@ -349,6 +395,7 @@ onMounted(async () => {
   await orderStore.loadOrders()
   await vendorStore.loadVendors()
   await vendorStore.loadMenuItems()
+  await reviewStore.loadReviews()
   orderItemsData.value = await getMockData('orderItems.json')
 
   loading.value = false
@@ -388,6 +435,21 @@ const formattedDate = computed(() => {
   }
 
   return date.toLocaleString()
+})
+
+const canReviewOrder = computed(() => {
+  if (!order.value) return false
+
+  return order.value.status === 'collected' &&
+    !reviewStore.hasReviewedOrder(order.value.order_id)
+})
+
+const existingReview = computed(() => {
+  if (!order.value) return null
+
+  return reviewStore.allReviews.find((review) => {
+    return Number(review.order_id) === Number(order.value.order_id)
+  })
 })
 
 function getMenuItemName(menuItemId) {
@@ -453,5 +515,27 @@ function handleReorder() {
   }
 
   router.push('/cart')
+}
+
+function submitReview() {
+  if (!order.value) return
+
+  if (!reviewComment.value.trim()) {
+    alert('Please write a short review before submitting.')
+    return
+  }
+
+  reviewStore.addReview({
+    order_id: order.value.order_id,
+    vendor_id: order.value.vendor_id,
+    user_id: authStore.currentUser.user_id,
+    rating: reviewRating.value,
+    comment: reviewComment.value.trim()
+  })
+
+  reviewComment.value = ''
+  reviewRating.value = 5
+
+  alert('Review submitted successfully.')
 }
 </script>
