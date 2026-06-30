@@ -8,7 +8,9 @@ export const useOrderStore = defineStore('orders', {
     sessionOrders: JSON.parse(sessionStorage.getItem('sessionOrders')) || [],
     showStatusModal: false,
     statusModalTitle: '',
-    statusModalMessage: ''
+    statusModalMessage: '',
+    showCancelModal: false,
+    cancelOrderId: null
   }),
 
   actions: {
@@ -80,6 +82,40 @@ export const useOrderStore = defineStore('orders', {
       this.showStatusModal = false
       this.statusModalTitle = ''
       this.statusModalMessage = ''
+    },
+
+    openCancelModal(orderId) {
+      this.cancelOrderId = orderId
+      this.showCancelModal = true
+    },
+
+    closeCancelModal() {
+      this.cancelOrderId = null
+      this.showCancelModal = false
+    },
+
+    async confirmCancelOrder() {
+      if (!this.cancelOrderId) return
+
+      const orderId = this.cancelOrderId
+
+      try {
+        await this.updateOrderStatus(orderId, 'cancelled')
+
+        this.showCancelModal = false
+        this.cancelOrderId = null
+
+        this.showStatusModal = true
+        this.statusModalTitle = 'Order Cancelled'
+        this.statusModalMessage = `Order #${orderId} has been cancelled successfully.`
+      } catch (error) {
+        this.showCancelModal = false
+        this.cancelOrderId = null
+
+        this.showStatusModal = true
+        this.statusModalTitle = 'Cancel Failed'
+        this.statusModalMessage = error.message || 'Unable to cancel order.'
+      }
     }
   }
 })

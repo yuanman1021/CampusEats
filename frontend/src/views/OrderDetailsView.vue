@@ -480,11 +480,9 @@ function isStatusActive(stepValue) {
 }
 
 function handleCancelOrder() {
-  const confirmed = window.confirm('Are you sure you want to cancel this order?')
+  if (!order.value) return
 
-  if (!confirmed) return
-
-  orderStore.cancelOrder(order.value.order_id)
+  orderStore.openCancelModal(order.value.order_id)
 }
 
 function handleReorder() {

@@ -45,6 +45,30 @@
       </div>
     </div>
   </div>
+
+  <div v-if="orderStore.showCancelModal" class="app-modal-overlay">
+    <div class="app-modal-card">
+      <div class="app-modal-icon">
+        ⚠️
+      </div>
+
+      <h3>Cancel Order?</h3>
+
+      <p>
+        Are you sure you want to cancel this order? This action cannot be undone.
+      </p>
+
+      <div class="app-modal-actions">
+        <button class="btn secondary" @click="orderStore.closeCancelModal">
+          No, Keep Order
+        </button>
+
+        <button class="btn danger-btn" @click="orderStore.confirmCancelOrder">
+          Yes, Cancel
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
