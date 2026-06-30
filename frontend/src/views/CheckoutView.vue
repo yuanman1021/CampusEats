@@ -154,7 +154,7 @@ const paymentMethods = [
   {
     value: 'card',
     label: 'Debit / Credit Card',
-    description: 'Mock card payment for PR2 demo.',
+    description: 'Pay securely using your debit or credit card.',
     icon: '💳'
   }
 ]
