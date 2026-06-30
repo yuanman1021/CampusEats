@@ -249,8 +249,7 @@ function itemTotal(item) {
   return price * quantity
 }
 
-function saveStatus() {
-  orderStore.updateOrderStatus(order.value.order_id, selectedStatus.value)
-  alert('Order status updated successfully.')
+async function saveStatus() {
+  await orderStore.updateOrderStatus(order.value.order_id, selectedStatus.value)
 }
 </script>

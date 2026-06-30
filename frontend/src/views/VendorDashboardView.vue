@@ -114,7 +114,7 @@
         v-model="order.status"
         class="input"
         @click.stop
-        @change.stop="orderStore.updateOrderStatus(order.order_id, order.status)"
+        @change.stop="handleStatusChange(order)"
       >
         <option value="placed">Placed</option>
         <option value="preparing">Preparing</option>
@@ -190,5 +190,9 @@ const vendorAverageRating = computed(() => {
 
 function goToOrderDetails(orderId) {
   router.push(`/vendor/orders/${orderId}`)
+}
+
+async function handleStatusChange(order) {
+  await orderStore.updateOrderStatus(order.order_id, order.status)
 }
 </script>

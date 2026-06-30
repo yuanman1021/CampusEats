@@ -1761,3 +1761,8 @@ a {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+/* ---------- OK Button ---------- */
+.app-modal-actions.single-action {
+  grid-template-columns: 1fr;
+}

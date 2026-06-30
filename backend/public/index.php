@@ -235,6 +235,62 @@ $app->post('/api/orders', function ($request, $response) {
     }
 });
 
+$app->put('/api/orders/{id}/status', function ($request, $response, $args) {
+    $db = getDB();
+    $orderId = $args['id'];
+    $data = json_decode($request->getBody()->getContents(), true);
+
+    $status = $data['status'] ?? null;
+
+    $allowedStatuses = ['placed', 'preparing', 'ready', 'collected', 'cancelled'];
+
+    if (!$status || !in_array($status, $allowedStatuses)) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Invalid order status.'
+        ]));
+
+        return $response
+            ->withStatus(400)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    $stmt = $db->prepare("
+        UPDATE orders
+        SET status = ?
+        WHERE order_id = ?
+    ");
+
+    $stmt->execute([$status, $orderId]);
+
+    $stmt = $db->prepare("
+        SELECT 
+            o.*,
+            u.name AS customer_name,
+            v.name AS vendor_name
+        FROM orders o
+        JOIN users u ON o.user_id = u.user_id
+        JOIN vendors v ON o.vendor_id = v.vendor_id
+        WHERE o.order_id = ?
+    ");
+
+    $stmt->execute([$orderId]);
+    $updatedOrder = $stmt->fetch();
+
+    if (!$updatedOrder) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Order not found.'
+        ]));
+
+        return $response
+            ->withStatus(404)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    $response->getBody()->write(json_encode($updatedOrder));
+
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
 $app->get('/api/order-items', function ($request, $response) {
     $db = getDB();
 

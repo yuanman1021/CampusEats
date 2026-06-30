@@ -4,7 +4,11 @@ import { getMockData, createOrderApi, updateOrderStatusApi } from '../services/m
 export const useOrderStore = defineStore('orders', {
   state: () => ({
     orders: [],
-    latestOrder: JSON.parse(sessionStorage.getItem('latestOrder')) || null
+    latestOrder: JSON.parse(sessionStorage.getItem('latestOrder')) || null,
+    sessionOrders: JSON.parse(sessionStorage.getItem('sessionOrders')) || [],
+    showStatusModal: false,
+    statusModalTitle: '',
+    statusModalMessage: ''
   }),
 
   actions: {
@@ -24,26 +28,58 @@ export const useOrderStore = defineStore('orders', {
     },
 
     async updateOrderStatus(orderId, status) {
-      const result = await updateOrderStatusApi(orderId, status)
+      try {
+        const response = await fetch(`http://localhost:8000/api/orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            status
+          })
+        })
 
-      const order = this.orders.find((item) => {
-        return Number(item.order_id) === Number(orderId)
-      })
+        if (!response.ok) {
+          throw new Error('Failed to update order status.')
+        }
 
-      if (order) {
-        order.status = status
+        const updatedOrder = await response.json()
+
+        const order = this.orders.find((item) => {
+          return Number(item.order_id) === Number(orderId)
+        })
+
+        if (order) {
+          order.status = updatedOrder.status || status
+        }
+
+        if (this.latestOrder && Number(this.latestOrder.order_id) === Number(orderId)) {
+          this.latestOrder.status = updatedOrder.status || status
+          sessionStorage.setItem('latestOrder', JSON.stringify(this.latestOrder))
+        }
+
+        this.showStatusModal = true
+        this.statusModalTitle = 'Order Status Updated'
+        this.statusModalMessage = `Order #${orderId} has been updated to ${status}.`
+
+        return updatedOrder
+      } catch (error) {
+        this.showStatusModal = true
+        this.statusModalTitle = 'Update Failed'
+        this.statusModalMessage = error.message || 'Unable to update order status.'
+
+        throw error
       }
-
-      if (this.latestOrder && Number(this.latestOrder.order_id) === Number(orderId)) {
-        this.latestOrder.status = status
-        sessionStorage.setItem('latestOrder', JSON.stringify(this.latestOrder))
-      }
-
-      return result
     },
 
     async cancelOrder(orderId) {
       await this.updateOrderStatus(orderId, 'cancelled')
+    },
+
+    closeStatusModal() {
+      this.showStatusModal = false
+      this.statusModalTitle = ''
+      this.statusModalMessage = ''
     }
   }
 })

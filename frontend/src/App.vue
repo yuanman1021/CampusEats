@@ -25,10 +25,32 @@
       </div>
     </div>
   </div>
+
+  <div v-if="orderStore.showStatusModal" class="app-modal-overlay">
+    <div class="app-modal-card">
+      <div class="app-modal-icon">
+        ✅
+      </div>
+
+      <h3>{{ orderStore.statusModalTitle }}</h3>
+
+      <p>
+        {{ orderStore.statusModalMessage }}
+      </p>
+
+      <div class="app-modal-actions single-action">
+        <button class="btn" @click="orderStore.closeStatusModal">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { useCartStore } from './stores/cartStore.js'
+import { useOrderStore } from './stores/orderStore.js'
 
 const cartStore = useCartStore()
+const orderStore = useOrderStore()
 </script>
