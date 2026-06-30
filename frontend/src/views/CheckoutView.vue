@@ -164,13 +164,13 @@ const selectedPaymentLabel = computed(() => {
   return selected ? selected.label : '-'
 })
 
-function placeOrder() {
+async function placeOrder() {
   if (cartStore.items.length === 0 || !pickupSlot.value || !paymentMethod.value) return
 
   placingOrder.value = true
 
-  setTimeout(() => {
-    orderStore.createOrder({
+  try {
+    await orderStore.createOrder({
       user_id: authStore.currentUser.user_id,
       vendor_id: cartStore.vendorId || cartStore.items[0]?.vendor_id,
       subtotal: cartStore.subtotal,
@@ -186,13 +186,16 @@ function placeOrder() {
         menu_item_id: item.menu_item_id,
         name: item.name,
         quantity: item.quantity,
-        unit_price: item.price
+        unit_price: Number(item.price || 0)
       }))
     })
 
     cartStore.clearCart()
-    placingOrder.value = false
     router.push('/order-confirmation')
-  }, 600)
+  } catch (error) {
+    alert(error.message || 'Unable to place order. Please check backend server.')
+  } finally {
+    placingOrder.value = false
+  }
 }
 </script>

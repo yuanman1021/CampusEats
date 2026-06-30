@@ -123,6 +123,118 @@ $app->get('/api/orders', function ($request, $response) {
     return $response->withHeader('Content-Type', 'application/json');
 });
 
+$app->post('/api/orders', function ($request, $response) {
+    $db = getDB();
+    $data = $request->getParsedBody();
+
+    $userId = $data['user_id'] ?? null;
+    $vendorId = $data['vendor_id'] ?? null;
+    $subtotal = $data['subtotal'] ?? 0;
+    $serviceFee = $data['service_fee'] ?? 0;
+    $taxAmount = $data['tax_amount'] ?? 0;
+    $total = $data['total'] ?? 0;
+    $pickupAt = $data['pickup_at'] ?? null;
+    $items = $data['items'] ?? [];
+
+    if (!$userId || !$vendorId || empty($items)) {
+        $response->getBody()->write(json_encode([
+            'error' => 'user_id, vendor_id and items are required'
+        ]));
+
+        return $response
+            ->withStatus(400)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    if ($pickupAt === 'ASAP - 15 mins') {
+        $pickupAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+    } elseif ($pickupAt && !preg_match('/^\d{4}-\d{2}-\d{2}/', $pickupAt)) {
+        $pickupAt = date('Y-m-d') . ' ' . date('H:i:s', strtotime($pickupAt));
+    }
+
+    try {
+        $db->beginTransaction();
+
+        $stmt = $db->prepare("
+            INSERT INTO orders (
+                user_id,
+                vendor_id,
+                status,
+                subtotal,
+                service_fee,
+                tax_amount,
+                total,
+                pickup_at
+            )
+            VALUES (?, ?, 'placed', ?, ?, ?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $userId,
+            $vendorId,
+            $subtotal,
+            $serviceFee,
+            $taxAmount,
+            $total,
+            $pickupAt
+        ]);
+
+        $orderId = $db->lastInsertId();
+
+        $itemStmt = $db->prepare("
+            INSERT INTO order_items (
+                order_id,
+                menu_item_id,
+                quantity,
+                unit_price
+            )
+            VALUES (?, ?, ?, ?)
+        ");
+
+        foreach ($items as $item) {
+            $itemStmt->execute([
+                $orderId,
+                $item['menu_item_id'],
+                $item['quantity'],
+                $item['unit_price']
+            ]);
+        }
+
+        $db->commit();
+
+        $orderStmt = $db->prepare("
+            SELECT 
+                o.*,
+                u.name AS customer_name,
+                v.name AS vendor_name
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            JOIN vendors v ON o.vendor_id = v.vendor_id
+            WHERE o.order_id = ?
+        ");
+
+        $orderStmt->execute([$orderId]);
+        $newOrder = $orderStmt->fetch();
+
+        $response->getBody()->write(json_encode($newOrder));
+
+        return $response
+            ->withStatus(201)
+            ->withHeader('Content-Type', 'application/json');
+    } catch (Exception $e) {
+        $db->rollBack();
+
+        $response->getBody()->write(json_encode([
+            'error' => 'Unable to create order',
+            'details' => $e->getMessage()
+        ]));
+
+        return $response
+            ->withStatus(500)
+            ->withHeader('Content-Type', 'application/json');
+    }
+});
+
 $app->get('/api/order-items', function ($request, $response) {
     $db = getDB();
 
