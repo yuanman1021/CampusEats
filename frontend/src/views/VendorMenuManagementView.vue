@@ -27,6 +27,21 @@
       </div>
 
       <div class="card">
+        <div class="space-between">
+          <div>
+            <h3 style="margin: 0;">Menu Item Tools</h3>
+            <p class="muted" style="margin: 4px 0 0;">
+              Add new menu items for the vendor menu.
+            </p>
+          </div>
+
+          <button class="btn small-btn" @click="openAddItemModal">
+            Add New Item
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-top: 0;">Search and Filter</h3>
 
         <input
@@ -154,6 +169,60 @@
         </div>
       </div>
     </div>
+    
+    <div v-if="showAddModal" class="modal-overlay">
+      <div class="modal-card">
+        <h3>Add New Menu Item</h3>
+        <p class="muted">Create a mock menu item for PR2 demonstration.</p>
+
+        <label>Item Name</label>
+        <input
+          v-model="newItem.name"
+          class="input"
+          placeholder="Example: Chicken Rice"
+        />
+
+        <label>Description</label>
+        <textarea
+          v-model="newItem.description"
+          class="input review-textarea"
+          placeholder="Enter menu item description..."
+        ></textarea>
+
+        <label>Category</label>
+        <input
+          v-model="newItem.category"
+          class="input"
+          placeholder="Example: Rice"
+        />
+
+        <label>Price (RM)</label>
+        <input
+          v-model.number="newItem.price"
+          class="input"
+          type="number"
+          min="0"
+          step="0.10"
+        />
+
+        <label>Image URL</label>
+        <input
+          v-model="newItem.image_url"
+          class="input"
+          placeholder="/images/menu/example.jpg"
+        />
+
+        <div class="row modal-actions">
+          <button class="btn secondary" @click="closeAddItemModal">
+            Cancel
+          </button>
+
+          <button class="btn" @click="saveNewItem">
+            Save Item
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -172,6 +241,16 @@ const selectedCategory = ref('All')
 const stockFilter = ref('all')
 const editingItem = ref(null)
 const editedPrice = ref(0)
+
+const showAddModal = ref(false)
+
+const newItem = ref({
+  name: '',
+  description: '',
+  category: '',
+  price: 0,
+  image_url: ''
+})
 
 onMounted(async () => {
   loading.value = true
@@ -245,5 +324,54 @@ function savePrice() {
 
   editingItem.value.price = Number(editedPrice.value)
   closeEditPrice()
+}
+
+function openAddItemModal() {
+  showAddModal.value = true
+}
+
+function closeAddItemModal() {
+  showAddModal.value = false
+
+  newItem.value = {
+    name: '',
+    description: '',
+    category: '',
+    price: 0,
+    image_url: ''
+  }
+}
+
+function saveNewItem() {
+  if (!newItem.value.name.trim()) {
+    alert('Please enter item name.')
+    return
+  }
+
+  if (!newItem.value.category.trim()) {
+    alert('Please enter item category.')
+    return
+  }
+
+  if (Number(newItem.value.price) <= 0) {
+    alert('Please enter a valid price.')
+    return
+  }
+
+  const item = {
+    menu_item_id: Date.now(),
+    vendor_id: 1,
+    name: newItem.value.name.trim(),
+    description: newItem.value.description.trim() || 'No description provided.',
+    category: newItem.value.category.trim(),
+    price: Number(newItem.value.price),
+    image_url: newItem.value.image_url.trim(),
+    in_stock: true,
+    tags: []
+  }
+
+  vendorStore.menuItems.unshift(item)
+
+  closeAddItemModal()
 }
 </script>
