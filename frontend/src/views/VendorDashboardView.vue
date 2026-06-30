@@ -41,12 +41,19 @@
         {{ vendorReviews.length }} review(s) received
       </p>
 
-      <div v-if="vendorReviews.length === 0" class="empty-review">
-        <p class="muted">No reviews received yet.</p>
+      <select v-model="reviewFilter" class="input">
+        <option value="all">All Reviews</option>
+        <option value="5">5 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="low">3 Stars and Below</option>
+      </select>
+
+      <div v-if="filteredVendorReviews.length === 0" class="empty-review">
+        <p class="muted">No reviews match the selected filter.</p>
       </div>
 
       <div
-        v-for="review in vendorReviews.slice(0, 3)"
+        v-for="review in filteredVendorReviews.slice(0, 3)"
         :key="review.review_id"
         class="review-item"
       >
@@ -146,6 +153,7 @@ import { useReviewStore } from '../stores/reviewStore.js'
 
 const orderStore = useOrderStore()
 const statusFilter = ref('all')
+const reviewFilter = ref('all')
 const reviewStore = useReviewStore()
 
 onMounted(async () => {
@@ -213,6 +221,22 @@ const router = useRouter()
 
 const vendorReviews = computed(() => {
   return reviewStore.getVendorReviews(1)
+})
+
+const filteredVendorReviews = computed(() => {
+  if (reviewFilter.value === 'all') {
+    return vendorReviews.value
+  }
+
+  if (reviewFilter.value === 'low') {
+    return vendorReviews.value.filter((review) => {
+      return Number(review.rating) <= 3
+    })
+  }
+
+  return vendorReviews.value.filter((review) => {
+    return Number(review.rating) === Number(reviewFilter.value)
+  })
 })
 
 const vendorAverageRating = computed(() => {
