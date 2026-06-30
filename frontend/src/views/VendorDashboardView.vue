@@ -24,6 +24,18 @@
     </div>
 
     <div class="card">
+      <h3 style="margin: 0;">Best-Selling Item</h3>
+      <p class="muted" style="margin: 4px 0 0;">
+        Most ordered item based on current loaded orders.
+      </p>
+
+      <div class="best-selling-box">
+        <span>🏆</span>
+        <strong>{{ bestSellingItem }}</strong>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="space-between">
         <div>
           <h3 style="margin: 0;">Review Monitoring</h3>
@@ -205,6 +217,34 @@ const todaySales = computed(() => {
   return vendorOrders.value.reduce((sum, order) => {
     return sum + Number(order.total || 0)
   }, 0)
+})
+
+const bestSellingItem = computed(() => {
+  const itemCount = {}
+
+  vendorOrders.value.forEach((order) => {
+    if (!order.items) return
+
+    order.items.forEach((item) => {
+      const name = item.name || `Item #${item.menu_item_id}`
+
+      if (!itemCount[name]) {
+        itemCount[name] = 0
+      }
+
+      itemCount[name] += Number(item.quantity || 0)
+    })
+  })
+
+  const sortedItems = Object.entries(itemCount).sort((a, b) => {
+    return b[1] - a[1]
+  })
+
+  if (sortedItems.length === 0) {
+    return 'No data'
+  }
+
+  return sortedItems[0][0]
 })
 
 const filteredOrders = computed(() => {
