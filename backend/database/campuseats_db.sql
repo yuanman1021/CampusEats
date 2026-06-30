@@ -165,7 +165,7 @@ CREATE TABLE `notifications` (
 
 INSERT INTO `users` (`user_id`, `name`, `email`, `password_hash`, `role`, `status`, `created_at`) VALUES
     (1, 'Ali Student', 'ali@student.utm.my', '$2y$12$PW7fuytoSc6xjZx5A3Y89uQnQxsksuwl8kMQNTT0qt1lpmtb.ibwO', 'customer', 'active', '2026-04-01 09:00:00'),
-    (2, 'Daily Grind Owner', 'dailygrind@utm.my', '$2y$12$PW7fuytoSc6xjZx5A3Y89uQnQxsksuwl8kMQNTT0qt1lpmtb.ibwO', 'vendor', 'active', '2026-04-01 09:10:00'),
+    (2, 'Lemon Tree Owner', 'lemontree@utm.my', '$2y$12$PW7fuytoSc6xjZx5A3Y89uQnQxsksuwl8kMQNTT0qt1lpmtb.ibwO', 'vendor', 'active', '2026-04-01 09:10:00'),
     (3, 'Admin User', 'admin@campuseats.my', '$2y$12$PW7fuytoSc6xjZx5A3Y89uQnQxsksuwl8kMQNTT0qt1lpmtb.ibwO', 'admin', 'active', '2026-04-01 09:20:00');
 
 INSERT INTO `vendors` (`vendor_id`, `name`, `location`, `opening_hours`, `rating`, `status`, `image_url`) VALUES
@@ -234,7 +234,7 @@ INSERT INTO `reviews` (`review_id`, `order_id`, `user_id`, `vendor_id`, `rating`
     (1, 1, 1, 1, 5, 'Food was ready on time and tasted good.', '2026-04-08 13:00:00');
 
 INSERT INTO `notifications` (`notification_id`, `user_id`, `order_id`, `promotion_id`, `title`, `message`, `type`, `is_read`, `created_at`) VALUES
-    (1, 1, 1, NULL, 'Order Ready', 'Your order from The Daily Grind is ready for pickup.', 'order_ready', 0, '2026-04-08 12:25:00'),
+    (1, 1, 1, NULL, 'Order Ready', 'Your order from The Lemon Tree is ready for pickup.', 'order_ready', 0, '2026-04-08 12:25:00'),
     (2, 2, 2, NULL, 'New Order Received', 'A new order has been placed by Ali Student.', 'order_status', 0, '2026-04-08 12:20:00'),
     (3, 1, NULL, 1, 'New Promotion', 'Friday Pizza Party is now available at The Commons Hall.', 'promotion', 1, '2026-04-08 11:00:00');
 

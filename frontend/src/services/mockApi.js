@@ -96,3 +96,37 @@ export async function createReviewApi(reviewData) {
 
   return response.json()
 }
+
+export async function registerUserApi(userData) {
+  const response = await fetch(`${API_BASE_URL}/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(userData)
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || 'Unable to register account')
+  }
+
+  return response.json()
+}
+
+export async function loginUserApi(email, password) {
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || 'Invalid email or password')
+  }
+
+  return response.json()
+}

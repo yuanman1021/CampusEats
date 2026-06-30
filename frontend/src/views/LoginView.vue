@@ -45,7 +45,7 @@
       <div class="demo-box">
         <strong>Demo Accounts</strong>
         <p>Customer: ali@student.utm.my / 123456</p>
-        <p>Vendor: dailygrind@utm.my / 123456</p>
+        <p>Vendor: lemontree@utm.my / 123456</p>
         <p>Admin: admin@campuseats.my / 123456</p>
       </div>
     </section>

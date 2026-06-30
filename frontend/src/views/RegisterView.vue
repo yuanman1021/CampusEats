@@ -45,8 +45,8 @@
           {{ errorMessage }}
         </p>
 
-        <button class="btn" @click="handleRegister">
-          Register
+        <button class="btn" :disabled="loading" @click="handleRegister">
+          {{ loading ? 'Creating Account...' : 'Register' }}
         </button>
       </div>
 
@@ -61,6 +61,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { registerUserApi } from '../services/mockApi.js'
 
 const router = useRouter()
 
@@ -69,8 +70,9 @@ const email = ref('')
 const password = ref('')
 const role = ref('customer')
 const errorMessage = ref('')
+const loading = ref(false)
 
-function handleRegister() {
+async function handleRegister() {
   errorMessage.value = ''
 
   if (!name.value || !email.value || !password.value) {
@@ -78,7 +80,22 @@ function handleRegister() {
     return
   }
 
-  alert('Account created successfully. Please login.')
-  router.push('/login')
+  loading.value = true
+
+  try {
+    await registerUserApi({
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      role: role.value
+    })
+
+    alert('Account created successfully. Please login.')
+    router.push('/login')
+  } catch (error) {
+    errorMessage.value = error.message || 'Unable to create account.'
+  } finally {
+    loading.value = false
+  }
 }
 </script>

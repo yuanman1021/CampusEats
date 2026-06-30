@@ -439,4 +439,129 @@ $app->post('/api/reviews', function ($request, $response) {
     }
 });
 
+$app->post('/api/register', function ($request, $response) {
+    $db = getDB();
+    $data = $request->getParsedBody();
+
+    $name = $data['name'] ?? '';
+    $email = $data['email'] ?? '';
+    $password = $data['password'] ?? '';
+    $role = $data['role'] ?? 'customer';
+
+    if (!$name || !$email || !$password) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Name, email, and password are required'
+        ]));
+
+        return $response
+            ->withStatus(400)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    $checkStmt = $db->prepare("SELECT user_id FROM users WHERE email = ?");
+    $checkStmt->execute([$email]);
+
+    if ($checkStmt->fetch()) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Email already exists'
+        ]));
+
+        return $response
+            ->withStatus(409)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+    $stmt = $db->prepare("
+        INSERT INTO users (name, email, password_hash, role, status)
+        VALUES (?, ?, ?, ?, 'active')
+    ");
+
+    $stmt->execute([
+        $name,
+        $email,
+        $passwordHash,
+        $role
+    ]);
+
+    $userId = $db->lastInsertId();
+
+    $userStmt = $db->prepare("
+        SELECT user_id, name, email, role, status, created_at
+        FROM users
+        WHERE user_id = ?
+    ");
+    $userStmt->execute([$userId]);
+
+    $newUser = $userStmt->fetch();
+
+    $response->getBody()->write(json_encode($newUser));
+
+    return $response
+        ->withStatus(201)
+        ->withHeader('Content-Type', 'application/json');
+});
+
+$app->post('/api/login', function ($request, $response) {
+    $db = getDB();
+    $data = $request->getParsedBody();
+
+    $email = $data['email'] ?? '';
+    $password = $data['password'] ?? '';
+
+    if (!$email || !$password) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Email and password are required'
+        ]));
+
+        return $response
+            ->withStatus(400)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    $stmt = $db->prepare("
+        SELECT 
+            u.user_id,
+            u.name,
+            u.email,
+            u.password_hash,
+            u.role,
+            u.status,
+            vu.vendor_id
+        FROM users u
+        LEFT JOIN vendor_users vu ON u.user_id = vu.user_id
+        WHERE u.email = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if (!$user || !password_verify($password, $user['password_hash'])) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Invalid email or password'
+        ]));
+
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    if ($user['status'] !== 'active') {
+        $response->getBody()->write(json_encode([
+            'error' => 'Account is not active'
+        ]));
+
+        return $response
+            ->withStatus(403)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    unset($user['password_hash']);
+
+    $response->getBody()->write(json_encode($user));
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
 $app->run();
