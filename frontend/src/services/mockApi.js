@@ -1,8 +1,24 @@
+const API_BASE_URL = 'http://localhost:8000/api'
+
+const fileToEndpoint = {
+  'vendors.json': '/vendors',
+  'menuItems.json': '/menu-items',
+  'menu.json': '/menu-items',
+}
+
 export async function getMockData(fileName) {
-  const response = await fetch(`/data/${fileName}`)
+  const endpoint = fileToEndpoint[fileName]
+
+  if (!endpoint) {
+    const response = await fetch(`/data/${fileName}`)
+    if (!response.ok) throw new Error(`Unable to load ${fileName}`)
+    return response.json()
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`)
 
   if (!response.ok) {
-    throw new Error(`Unable to load ${fileName}`)
+    throw new Error(`Unable to load ${fileName} from API`)
   }
 
   return response.json()
