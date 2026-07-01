@@ -173,7 +173,7 @@
     <div v-if="showAddModal" class="modal-overlay">
       <div class="modal-card">
         <h3>Add New Menu Item</h3>
-        <p class="muted">Create a mock menu item for PR2 demonstration.</p>
+        <p class="muted">Add a new menu item for your vendor menu.</p>
 
         <label>Item Name</label>
         <input
