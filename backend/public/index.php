@@ -6,8 +6,8 @@ use Dotenv\Dotenv;
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../src/db.php';
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->safeLoad();
 
 $app = AppFactory::create();
 
@@ -569,6 +569,26 @@ $app->post('/api/login', function ($request, $response) {
     unset($user['password_hash']);
 
     $response->getBody()->write(json_encode($user));
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
+$app->get('/api', function ($request, $response) {
+    $data = [
+        'message' => 'CampusEats API is running',
+        'endpoints' => [
+            '/api/vendors',
+            '/api/menu-items',
+            '/api/promotions',
+            '/api/notifications',
+            '/api/orders',
+            '/api/order-items',
+            '/api/reviews',
+            '/api/login',
+            '/api/register'
+        ]
+    ];
+
+    $response->getBody()->write(json_encode($data));
     return $response->withHeader('Content-Type', 'application/json');
 });
 
