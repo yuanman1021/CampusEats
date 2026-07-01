@@ -27,6 +27,21 @@
       </div>
 
       <div class="card">
+        <div class="space-between">
+          <div>
+            <h3 style="margin: 0;">Menu Item Tools</h3>
+            <p class="muted" style="margin: 4px 0 0;">
+              Add new menu items for the vendor menu.
+            </p>
+          </div>
+
+          <button class="btn small-btn" @click="openAddItemModal">
+            Add New Item
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-top: 0;">Search and Filter</h3>
 
         <input
@@ -154,6 +169,60 @@
         </div>
       </div>
     </div>
+    
+    <div v-if="showAddModal" class="modal-overlay">
+      <div class="modal-card">
+        <h3>Add New Menu Item</h3>
+        <p class="muted">Create a mock menu item for PR2 demonstration.</p>
+
+        <label>Item Name</label>
+        <input
+          v-model="newItem.name"
+          class="input"
+          placeholder="Example: Chicken Rice"
+        />
+
+        <label>Description</label>
+        <textarea
+          v-model="newItem.description"
+          class="input review-textarea"
+          placeholder="Enter menu item description..."
+        ></textarea>
+
+        <label>Category</label>
+        <input
+          v-model="newItem.category"
+          class="input"
+          placeholder="Example: Rice"
+        />
+
+        <label>Price (RM)</label>
+        <input
+          v-model.number="newItem.price"
+          class="input"
+          type="number"
+          min="0"
+          step="0.10"
+        />
+
+        <label>Image URL</label>
+        <input
+          v-model="newItem.image_url"
+          class="input"
+          placeholder="/images/menu/example.jpg"
+        />
+
+        <div class="row modal-actions">
+          <button class="btn secondary" @click="closeAddItemModal">
+            Cancel
+          </button>
+
+          <button class="btn" @click="saveNewItem">
+            Save Item
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -163,8 +232,10 @@ import Navbar from '../components/Navbar.vue'
 import BackButton from '../components/BackButton.vue'
 import DashboardCard from '../components/DashboardCard.vue'
 import { useVendorStore } from '../stores/vendorStore'
+import { useAuthStore } from '../stores/authStore.js'
 
 const vendorStore = useVendorStore()
+const authStore = useAuthStore()
 
 const loading = ref(false)
 const searchText = ref('')
@@ -173,6 +244,20 @@ const stockFilter = ref('all')
 const editingItem = ref(null)
 const editedPrice = ref(0)
 
+const showAddModal = ref(false)
+
+const newItem = ref({
+  name: '',
+  description: '',
+  category: '',
+  price: 0,
+  image_url: ''
+})
+
+const vendorId = computed(() => {
+  return Number(authStore.currentUser?.vendor_id)
+})
+
 onMounted(async () => {
   loading.value = true
   await vendorStore.loadMenuItems()
@@ -180,15 +265,17 @@ onMounted(async () => {
 })
 
 const vendorItems = computed(() => {
-  return vendorStore.menuItems.filter((item) => item.vendor_id === 1)
+  return vendorStore.menuItems.filter((item) => {
+    return Number(item.vendor_id) === vendorId.value
+  })
 })
 
 const inStockItems = computed(() => {
-  return vendorItems.value.filter((item) => item.in_stock)
+  return vendorItems.value.filter((item) => Number(item.in_stock) === 1 || item.in_stock === true)
 })
 
 const outOfStockItems = computed(() => {
-  return vendorItems.value.filter((item) => !item.in_stock)
+  return vendorItems.value.filter((item) => Number(item.in_stock) === 0 || item.in_stock === false)
 })
 
 const categories = computed(() => {
@@ -200,20 +287,26 @@ const filteredItems = computed(() => {
   const keyword = searchText.value.toLowerCase().trim()
 
   return vendorItems.value.filter((item) => {
+    const name = item.name || ''
+    const description = item.description || ''
+    const category = item.category || ''
+
     const matchesSearch =
       !keyword ||
-      item.name.toLowerCase().includes(keyword) ||
-      item.description.toLowerCase().includes(keyword) ||
-      item.category.toLowerCase().includes(keyword)
+      name.toLowerCase().includes(keyword) ||
+      description.toLowerCase().includes(keyword) ||
+      category.toLowerCase().includes(keyword)
 
     const matchesCategory =
       selectedCategory.value === 'All' ||
-      item.category === selectedCategory.value
+      category === selectedCategory.value
+
+    const isInStock = Number(item.in_stock) === 1 || item.in_stock === true
 
     const matchesStock =
       stockFilter.value === 'all' ||
-      (stockFilter.value === 'in_stock' && item.in_stock) ||
-      (stockFilter.value === 'out_of_stock' && !item.in_stock)
+      (stockFilter.value === 'in_stock' && isInStock) ||
+      (stockFilter.value === 'out_of_stock' && !isInStock)
 
     return matchesSearch && matchesCategory && matchesStock
   })
@@ -245,5 +338,54 @@ function savePrice() {
 
   editingItem.value.price = Number(editedPrice.value)
   closeEditPrice()
+}
+
+function openAddItemModal() {
+  showAddModal.value = true
+}
+
+function closeAddItemModal() {
+  showAddModal.value = false
+
+  newItem.value = {
+    name: '',
+    description: '',
+    category: '',
+    price: 0,
+    image_url: ''
+  }
+}
+
+function saveNewItem() {
+  if (!newItem.value.name.trim()) {
+    alert('Please enter item name.')
+    return
+  }
+
+  if (!newItem.value.category.trim()) {
+    alert('Please enter item category.')
+    return
+  }
+
+  if (Number(newItem.value.price) <= 0) {
+    alert('Please enter a valid price.')
+    return
+  }
+
+  const item = {
+    menu_item_id: Date.now(),
+    vendor_id: vendorId.value,
+    name: newItem.value.name.trim(),
+    description: newItem.value.description.trim() || 'No description provided.',
+    category: newItem.value.category.trim(),
+    price: Number(newItem.value.price),
+    image_url: newItem.value.image_url.trim(),
+    in_stock: true,
+    tags: []
+  }
+
+  vendorStore.menuItems.unshift(item)
+
+  closeAddItemModal()
 }
 </script>

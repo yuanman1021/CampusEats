@@ -95,6 +95,6 @@ CampusEats/
 
 ```text
 Customer: ali@student.utm.my / 123456
-Vendor: dailygrind@utm.my / 123456
+Vendor: lemontree@utm.my / 123456
 Admin: admin@campuseats.my / 123456
 ```

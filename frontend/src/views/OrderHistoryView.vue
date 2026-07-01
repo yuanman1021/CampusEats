@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import BottomNav from '../components/BottomNav.vue'
@@ -67,12 +67,24 @@ const loading = ref(false)
 const errorMessage = ref('')
 const router = useRouter()
 
+let refreshTimer = null
+
 function goToOrderDetails(order) {
   router.push(`/orders/${order.order_id}`)
 }
 
 onMounted(() => {
   loadOrderData()
+
+  refreshTimer = setInterval(() => {
+    orderStore.loadOrders()
+  }, 3000)
+})
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+  }
 })
 
 async function loadOrderData() {
@@ -90,7 +102,7 @@ async function loadOrderData() {
 
 const customerOrders = computed(() => {
   return orderStore.orders.filter((order) => {
-    return order.user_id === authStore.currentUser.user_id
+    return Number(order.user_id) === Number(authStore.currentUser?.user_id)
   })
 })
 

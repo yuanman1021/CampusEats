@@ -1,19 +1,32 @@
 import { defineStore } from 'pinia'
-import { getMockData } from '../services/mockApi'
+import { loginUserApi, registerUserApi } from '../services/mockApi.js'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     currentUser: JSON.parse(localStorage.getItem('currentUser')) || null
   }),
 
+  getters: {
+    isAuthenticated(state) {
+      return !!state.currentUser
+    },
+
+    isCustomer(state) {
+      return state.currentUser?.role === 'customer'
+    },
+
+    isVendor(state) {
+      return state.currentUser?.role === 'vendor'
+    },
+
+    isAdmin(state) {
+      return state.currentUser?.role === 'admin'
+    }
+  },
+
   actions: {
     async login(email, password) {
-      const users = await getMockData('users.json')
-      const user = users.find((item) => item.email === email && item.password === password)
-
-      if (!user) {
-        throw new Error('Invalid email or password')
-      }
+      const user = await loginUserApi(email, password)
 
       this.currentUser = user
       localStorage.setItem('currentUser', JSON.stringify(user))
@@ -21,25 +34,13 @@ export const useAuthStore = defineStore('auth', {
       return user
     },
 
-    async register(name, email, password, role) {
-      const users = await getMockData('users.json')
-      const existing = users.find((item) => item.email === email)
-
-      if (existing) {
-        throw new Error('An account with this email already exists')
-      }
-
-      const newUser = {
-        user_id: Date.now(),
+    async register(name, email, password, role = 'customer') {
+      const newUser = await registerUserApi({
         name,
         email,
         password,
-        role,
-        created_at: new Date().toISOString()
-      }
-
-      this.currentUser = newUser
-      localStorage.setItem('currentUser', JSON.stringify(newUser))
+        role
+      })
 
       return newUser
     },

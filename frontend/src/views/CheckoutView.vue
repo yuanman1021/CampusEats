@@ -23,11 +23,13 @@
 
         <select v-model="pickupSlot" class="input">
           <option disabled value="">Select pickup slot</option>
-          <option>ASAP - 15 mins</option>
-          <option>12:30 PM</option>
-          <option>12:45 PM</option>
-          <option>01:00 PM</option>
-          <option>01:15 PM</option>
+          <option
+            v-for="option in pickupOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
         </select>
 
         <textarea
@@ -73,7 +75,7 @@
           class="space-between summary-row"
         >
           <span>{{ item.quantity }} × {{ item.name }}</span>
-          <span>RM {{ (item.price * item.quantity).toFixed(2) }}</span>
+          <span>RM {{ (Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2) }}</span>
         </div>
       </div>
 
@@ -133,7 +135,7 @@ const authStore = useAuthStore()
 const cartStore = useCartStore()
 const orderStore = useOrderStore()
 
-const pickupSlot = ref('ASAP - 15 mins')
+const pickupSlot = ref('')
 const note = ref('')
 const paymentMethod = ref('cash')
 const placingOrder = ref(false)
@@ -154,7 +156,7 @@ const paymentMethods = [
   {
     value: 'card',
     label: 'Debit / Credit Card',
-    description: 'Mock card payment for PR2 demo.',
+    description: 'Pay securely using your debit or credit card.',
     icon: '💳'
   }
 ]
@@ -164,13 +166,43 @@ const selectedPaymentLabel = computed(() => {
   return selected ? selected.label : '-'
 })
 
-function placeOrder() {
+function formatForMySQL(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+
+  return `${year}-${month}-${day} ${hour}:${minute}:00`
+}
+
+function formatDisplayTime(date) {
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const pickupOptions = computed(() => {
+  const now = new Date()
+
+  return [15, 30, 45, 60].map((minutes) => {
+    const pickupTime = new Date(now.getTime() + minutes * 60000)
+
+    return {
+      label: `${formatDisplayTime(pickupTime)} (${minutes} min)`,
+      value: formatForMySQL(pickupTime)
+    }
+  })
+})
+
+async function placeOrder() {
   if (cartStore.items.length === 0 || !pickupSlot.value || !paymentMethod.value) return
 
   placingOrder.value = true
 
-  setTimeout(() => {
-    orderStore.createOrder({
+  try {
+    await orderStore.createOrder({
       user_id: authStore.currentUser.user_id,
       vendor_id: cartStore.vendorId || cartStore.items[0]?.vendor_id,
       subtotal: cartStore.subtotal,
@@ -186,13 +218,16 @@ function placeOrder() {
         menu_item_id: item.menu_item_id,
         name: item.name,
         quantity: item.quantity,
-        unit_price: item.price
+        unit_price: Number(item.price || 0)
       }))
     })
 
     cartStore.clearCart()
-    placingOrder.value = false
     router.push('/order-confirmation')
-  }, 600)
+  } catch (error) {
+    alert(error.message || 'Unable to place order. Please check backend server.')
+  } finally {
+    placingOrder.value = false
+  }
 }
 </script>

@@ -9,8 +9,8 @@
   },
   {
     "user_id": 2,
-    "name": "Daily Grind Owner",
-    "email": "dailygrind@utm.my",
+    "name": "Lemon Tree Owner",
+    "email": "lemontree@utm.my",
     "password": "123456",
     "role": "vendor",
     "created_at": "2026-04-01 09:10:00"
