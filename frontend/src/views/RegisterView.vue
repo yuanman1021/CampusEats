@@ -1,66 +1,101 @@
 <template>
-  <main class="page">
-    <h1 class="page-title">Create Account</h1>
-    <p style="color: var(--muted);">Join CampusEats to start pre-ordering.</p>
+  <main class="auth-page">
+    <section class="auth-card">
+      <img
+        src="/images/campuseats-logo.png"
+        alt="CampusEats Logo"
+        class="auth-logo"
+      />
 
-    <input v-model="name" class="input" placeholder="Full name" />
-    <input v-model="email" class="input" placeholder="Email address" />
-    <input v-model="password" class="input" type="password" placeholder="Password" />
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">
+        Join CampusEats and start ordering from campus vendors.
+      </p>
 
-    <select v-model="role" class="input">
-      <option value="customer">Customer</option>
-      <option value="vendor">Vendor</option>
-    </select>
+      <div class="auth-form">
+        <label>Full Name</label>
+        <input
+          v-model="name"
+          class="input"
+          placeholder="Enter your full name"
+        />
 
-    <p v-if="errorMessage" style="color: var(--danger); font-size: 13px;">{{ errorMessage }}</p>
+        <label>Email Address</label>
+        <input
+          v-model="email"
+          class="input"
+          placeholder="Enter your email"
+        />
 
-    <button class="btn" :disabled="submitting" @click="handleRegister">
-      {{ submitting ? 'Creating account…' : 'Create Account' }}
-    </button>
+        <label>Password</label>
+        <input
+          v-model="password"
+          class="input"
+          type="password"
+          placeholder="Create a password"
+        />
 
-    <p style="text-align: center; margin-top: 14px;">
-      Already have an account?
-      <RouterLink to="/login"><strong>Login</strong></RouterLink>
-    </p>
+        <label>Account Type</label>
+        <select v-model="role" class="input">
+          <option value="customer">Customer</option>
+          <option value="vendor">Vendor</option>
+        </select>
+
+        <p v-if="errorMessage" class="auth-error">
+          {{ errorMessage }}
+        </p>
+
+        <button class="btn" :disabled="loading" @click="handleRegister">
+          {{ loading ? 'Creating Account...' : 'Register' }}
+        </button>
+      </div>
+
+      <p class="auth-link">
+        Already have an account?
+        <RouterLink to="/login">Login here</RouterLink>
+      </p>
+    </section>
   </main>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/authStore'
+import { registerUserApi } from '../services/mockApi.js'
 
 const router = useRouter()
-const authStore = useAuthStore()
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
 const role = ref('customer')
 const errorMessage = ref('')
-const submitting = ref(false)
-
-function validate() {
-  if (!name.value.trim()) return 'Please enter your full name'
-  if (!email.value.includes('@')) return 'Please enter a valid email address'
-  if (password.value.length < 6) return 'Password must be at least 6 characters'
-  return ''
-}
+const loading = ref(false)
 
 async function handleRegister() {
-  errorMessage.value = validate()
-  if (errorMessage.value) return
+  errorMessage.value = ''
 
-  submitting.value = true
+  if (!name.value || !email.value || !password.value) {
+    errorMessage.value = 'Please complete all fields.'
+    return
+  }
+
+  loading.value = true
+
   try {
-    const user = await authStore.register(name.value.trim(), email.value.trim(), password.value, role.value)
+    await registerUserApi({
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      role: role.value
+    })
 
-    if (user.role === 'vendor') router.push('/vendor/dashboard')
-    else router.push('/home')
+    alert('Account created successfully. Please login.')
+    router.push('/login')
   } catch (error) {
-    errorMessage.value = error.message
+    errorMessage.value = error.message || 'Unable to create account.'
   } finally {
-    submitting.value = false
+    loading.value = false
   }
 }
 </script>

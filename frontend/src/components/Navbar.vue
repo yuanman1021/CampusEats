@@ -1,12 +1,28 @@
 <template>
-  <div class="topbar">
-    <h1>CampusEats</h1>
-    <div class="row" style="gap: 4px;">
-      <RouterLink to="/notifications" class="icon-btn">
+  <div class="navbar">
+    <div class="navbar-brand">
+      <img
+        src="/images/campuseats-logo.png"
+        alt="CampusEats Logo"
+        class="navbar-logo"
+      />
+      <strong>CampusEats</strong>
+    </div>
+
+    <div class="navbar-actions">
+      <RouterLink to="/notifications" class="navbar-icon">
         🔔
-        <span v-if="unreadCount > 0" class="nav-badge">{{ unreadCount }}</span>
+        <span
+          v-if="userUnreadCount > 0"
+          class="notification-badge"
+        >
+          {{ userUnreadCount }}
+        </span>
       </RouterLink>
-      <button class="icon-btn" @click="handleLogout">🚪</button>
+
+      <button class="navbar-icon logout-icon" @click="handleLogout">
+        🚪
+      </button>
     </div>
   </div>
 </template>
@@ -27,9 +43,11 @@ onMounted(async () => {
   }
 })
 
-const unreadCount = computed(() => {
+const userUnreadCount = computed(() => {
   return notificationStore.notifications.filter(
-    (item) => !item.is_read && item.user_id === authStore.currentUser?.user_id
+    (item) =>
+      Number(item.user_id) === Number(authStore.currentUser?.user_id) &&
+      !item.is_read
   ).length
 })
 

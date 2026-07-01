@@ -13,6 +13,9 @@ import VendorDashboardView from '../views/VendorDashboardView.vue'
 import VendorMenuManagementView from '../views/VendorMenuManagementView.vue'
 import AdminDashboardView from '../views/AdminDashboardView.vue'
 import NotificationView from '../views/NotificationView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import OrderDetailsView from '../views/OrderDetailsView.vue'
+import VendorOrderDetailsView from '../views/VendorOrderDetailsView.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -25,8 +28,11 @@ const routes = [
   { path: '/checkout', name: 'checkout', component: CheckoutView, meta: { requiresAuth: true, roles: ['customer'] } },
   { path: '/order-confirmation', name: 'order-confirmation', component: OrderConfirmationView, meta: { requiresAuth: true, roles: ['customer'] } },
   { path: '/orders', name: 'orders', component: OrderHistoryView, meta: { requiresAuth: true, roles: ['customer'] } },
+  { path: '/orders/:id', name: 'order-details', component: OrderDetailsView, meta: { requiresAuth: true, roles: ['customer'] } },
+  { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true, roles: ['customer'] } },
 
   { path: '/vendor/dashboard', name: 'vendor-dashboard', component: VendorDashboardView, meta: { requiresAuth: true, roles: ['vendor'] } },
+  { path: '/vendor/orders/:id', name: 'vendor-order-details', component: VendorOrderDetailsView, meta: { requiresAuth: true, roles: ['vendor'] } },
   { path: '/vendor/menu-management', name: 'vendor-menu-management', component: VendorMenuManagementView, meta: { requiresAuth: true, roles: ['vendor'] } },
 
   { path: '/admin/dashboard', name: 'admin-dashboard', component: AdminDashboardView, meta: { requiresAuth: true, roles: ['admin'] } },
