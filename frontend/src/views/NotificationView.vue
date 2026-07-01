@@ -35,6 +35,8 @@ onMounted(async () => {
 })
 
 const userNotifications = computed(() => {
-  return notificationStore.notifications.filter((item) => item.user_id === authStore.currentUser.user_id)
+  return notificationStore.notifications.filter(
+    (item) => Number(item.user_id) === Number(authStore.currentUser?.user_id)
+  )
 })
 </script>

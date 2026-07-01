@@ -3,7 +3,9 @@ import { defineStore } from 'pinia'
 export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [],
-    vendorId: null
+    vendorId: null,
+    pendingItem: null,
+    showVendorSwitchModal: false
   }),
 
   getters: {
@@ -33,13 +35,9 @@ export const useCartStore = defineStore('cart', {
   actions: {
     addItem(menuItem) {
       if (this.vendorId && this.vendorId !== menuItem.vendor_id) {
-        const confirmed = window.confirm(
-          'Your cart has items from another vendor. Clear cart and add this item?'
-        )
-
-        if (!confirmed) return
-
-        this.clearCart()
+        this.pendingItem = menuItem
+        this.showVendorSwitchModal = true
+        return
       }
 
       this.vendorId = menuItem.vendor_id
@@ -89,6 +87,23 @@ export const useCartStore = defineStore('cart', {
     clearCart() {
       this.items = []
       this.vendorId = null
+    },
+
+    confirmVendorSwitch() {
+      if (!this.pendingItem) return
+
+      const itemToAdd = this.pendingItem
+
+      this.clearCart()
+      this.pendingItem = null
+      this.showVendorSwitchModal = false
+
+      this.addItem(itemToAdd)
+    },
+
+    cancelVendorSwitch() {
+      this.pendingItem = null
+      this.showVendorSwitchModal = false
     }
   }
 })

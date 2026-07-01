@@ -44,6 +44,11 @@
         <h3>Customer and Pickup</h3>
 
         <div class="space-between summary-row">
+          <span>Customer</span>
+          <strong>{{ order.customer_name || `Customer #${order.user_id}` }}</strong>
+        </div>
+
+        <div class="space-between summary-row">
           <span>Customer ID</span>
           <strong>#{{ order.user_id }}</strong>
         </div>
@@ -60,7 +65,7 @@
 
         <div class="space-between summary-row">
           <span>Payment Status</span>
-          <strong>{{ order.payment_status || '-' }}</strong>
+          <strong>{{ formatPaymentStatus(order.payment_status) }}</strong>
         </div>
 
         <div v-if="order.note" class="vendor-note-box">
@@ -174,17 +179,23 @@ import Navbar from '../components/Navbar.vue'
 import BackButton from '../components/BackButton.vue'
 import { useOrderStore } from '../stores/orderStore.js'
 import { useVendorStore } from '../stores/vendorStore.js'
+import { useAuthStore } from '../stores/authStore.js'
 import { getMockData } from '../services/mockApi.js'
 
 const route = useRoute()
 const orderStore = useOrderStore()
 const vendorStore = useVendorStore()
+const authStore = useAuthStore()
 
 const loading = ref(false)
 const orderItemsData = ref([])
 const selectedStatus = ref('placed')
 
 const orderId = Number(route.params.id)
+
+const vendorId = computed(() => {
+  return Number(authStore.currentUser?.vendor_id)
+})
 
 onMounted(async () => {
   loading.value = true
@@ -201,7 +212,12 @@ onMounted(async () => {
 })
 
 const order = computed(() => {
-  return orderStore.orders.find((item) => Number(item.order_id) === orderId)
+  return orderStore.orders.find((item) => {
+    return (
+      Number(item.order_id) === orderId &&
+      Number(item.vendor_id) === vendorId.value
+    )
+  })
 })
 
 const orderItems = computed(() => {
@@ -249,8 +265,15 @@ function itemTotal(item) {
   return price * quantity
 }
 
-function saveStatus() {
-  orderStore.updateOrderStatus(order.value.order_id, selectedStatus.value)
-  alert('Order status updated successfully.')
+function formatPaymentStatus(status) {
+  if (status === 'paid_mock') return 'Paid'
+  if (status === 'pending') return 'Pending'
+  return status || '-'
+}
+
+async function saveStatus() {
+  if (!order.value) return
+
+  await orderStore.updateOrderStatus(order.value.order_id, selectedStatus.value)
 }
 </script>
